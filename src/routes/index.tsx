@@ -219,6 +219,7 @@ function Index() {
                 <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-success" /> Free</span>
                 <span className="flex items-center gap-1.5"><i className="size-2 rounded-full bg-destructive" /> Busy</span>
               </div>
+              <div className="pointer-events-none absolute right-4 top-4 flex flex-col-reverse gap-1" aria-hidden="true">{[1, 2, 3, 4, 5, 6, 7].map((item) => <span key={item} className={`grid size-7 place-items-center rounded-sm border text-[10px] font-bold ${floor === "all" || floor === item ? "border-primary/50 bg-background/85 text-primary" : "border-border bg-background/60 text-muted-foreground"}`}>F{item}</span>)}</div>
             </div>
             <aside className="flex min-h-[300px] flex-col p-5" aria-live="polite">
               {selectedRoomData ? (

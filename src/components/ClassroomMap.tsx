@@ -1,4 +1,4 @@
-import { Html, Lightformer, OrbitControls, Environment } from "@react-three/drei";
+import { Lightformer, OrbitControls, Environment } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
@@ -100,17 +100,9 @@ function Building({ day, start, end, activeFloor, selectedRoom, onSelectRoom, co
                     <boxGeometry args={[2.2, 0.8, 1.35]} />
                     <meshStandardMaterial color={color} roughness={0.42} metalness={0.2} emissive={color} emissiveIntensity={selected ? 0.32 : 0.09} transparent opacity={focused ? 1 : 0.18} />
                   </mesh>
-                  {(selected || hoveredRoom === room.room) && focused && (
-                    <Html position={[0, 0.85, 0]} center distanceFactor={10}>
-                      <div className="map-room-label">{room.room}</div>
-                    </Html>
-                  )}
                 </group>
               );
             })}
-            <Html position={[5.2, 0.2, 0]} center distanceFactor={12}>
-              <div className={`map-floor-label ${focused ? "is-active" : ""}`}>F{floorNumber}</div>
-            </Html>
           </group>
         );
       })}
