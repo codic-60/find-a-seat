@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep classroom availability deterministic in `src/lib/rooms.ts`; timetable facts must come from supplied source documents, never AI inference.
+- Keep the 3D map client-only and derive its room state from `src/lib/rooms.ts` so the visual layer never becomes a second source of truth.
