@@ -30,6 +30,7 @@ function campusNow() {
     weekday: "long",
     hour: "2-digit",
     minute: "2-digit",
+    second: "2-digit",
     hour12: false,
   }).formatToParts(new Date());
   const read = (type: Intl.DateTimeFormatPartTypes) => parts.find((part) => part.type === type)?.value ?? "";
@@ -60,7 +61,7 @@ function parseQuery(query: string, fallbackDay: DayName, fallbackStart: number, 
   }
   const floorMatch = lowered.match(/(?:floor|level)\s*(\d)|(?:the\s+)?(\d)(?:st|nd|rd|th)\s+floor/);
   const requestedFloor = Number(floorMatch?.[1] ?? floorMatch?.[2]);
-  const floor = requestedFloor >= 1 && requestedFloor <= 7 ? requestedFloor : fallbackFloor;
+  const floor = lowered.includes("ground floor") ? 1 : requestedFloor >= 1 && requestedFloor <= 7 ? requestedFloor : fallbackFloor;
   const capacityMatch = lowered.match(/(?:for|team of|group of)\s*(\d+)\s*(?:people|persons|members|students)?/);
   const requestedCapacity = Number(capacityMatch?.[1]);
   const capacity = requestedCapacity > 0 ? requestedCapacity : fallbackCapacity;
