@@ -3,6 +3,8 @@ export type DayName = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday"
 export type BusyWindow = { start: number; end: number };
 export type RoomSchedule = {
   room: string;
+  floor: number;
+  capacity: 60;
   cohort: string;
   sourceYear: "2024–25" | "2026–27";
   schedule: Partial<Record<DayName, BusyWindow[]>>;
@@ -20,48 +22,64 @@ const firstYearFull = [{ start: 540, end: 1025 }];
 export const ROOM_SCHEDULES: RoomSchedule[] = [
   {
     room: "IST 602",
+    floor: 6,
+    capacity: 60,
     cohort: "I ECE-A · II BME",
     sourceYear: "2024–25",
     schedule: allDays(firstYearFull),
   },
   {
     room: "IST 609",
+    floor: 6,
+    capacity: 60,
     cohort: "I ECE-B / EEE",
     sourceYear: "2024–25",
     schedule: allDays(firstYearFull),
   },
   {
     room: "IST 502",
+    floor: 5,
+    capacity: 60,
     cohort: "I ECE-DS",
     sourceYear: "2024–25",
     schedule: allDays(firstYearFull),
   },
   {
     room: "IST 702",
+    floor: 7,
+    capacity: 60,
     cohort: "I Biotech-B / BME",
     sourceYear: "2024–25",
     schedule: allDays(firstYearFull),
   },
   {
     room: "IST 416",
+    floor: 4,
+    capacity: 60,
     cohort: "II ECE-DS A",
     sourceYear: "2026–27",
     schedule: allDays(currentMorning),
   },
   {
     room: "IST 411",
+    floor: 4,
+    capacity: 60,
     cohort: "II ECE-DS B",
     sourceYear: "2026–27",
     schedule: allDays(currentAfternoon),
   },
   {
     room: "IST 211",
+    floor: 2,
+    capacity: 60,
     cohort: "III BME",
     sourceYear: "2026–27",
     schedule: allDays(currentAfternoon),
   },
   {
     room: "IST 518",
+    floor: 5,
+    capacity: 60,
     cohort: "III ECE A & B",
     sourceYear: "2026–27",
     schedule: {
@@ -74,12 +92,16 @@ export const ROOM_SCHEDULES: RoomSchedule[] = [
   },
   {
     room: "IST 519",
+    floor: 5,
+    capacity: 60,
     cohort: "III ECE-DS",
     sourceYear: "2026–27",
     schedule: allDays(currentMorning),
   },
   {
     room: "IST 225",
+    floor: 2,
+    capacity: 60,
     cohort: "IV ECE A",
     sourceYear: "2026–27",
     schedule: {
@@ -92,6 +114,8 @@ export const ROOM_SCHEDULES: RoomSchedule[] = [
   },
   {
     room: "IST 227",
+    floor: 2,
+    capacity: 60,
     cohort: "IV ECE B",
     sourceYear: "2026–27",
     schedule: allDays(currentMorning),

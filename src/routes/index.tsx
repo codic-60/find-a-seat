@@ -37,7 +37,7 @@ function campusNow() {
   };
 }
 
-function parseQuery(query: string, fallbackDay: DayName, fallbackStart: number, fallbackDuration: number) {
+function parseQuery(query: string, fallbackDay: DayName, fallbackStart: number, fallbackDuration: number, fallbackFloor: number | "all", fallbackCapacity: number) {
   const lowered = query.toLowerCase();
   const day = DAYS.find((item) => lowered.includes(item.toLowerCase())) ?? fallbackDay;
   const durationMatch = lowered.match(/(\d+(?:\.\d+)?)\s*(hour|hr|hours|hrs|minute|min|minutes|mins)/);
@@ -55,7 +55,13 @@ function parseQuery(query: string, fallbackDay: DayName, fallbackStart: number, 
     if (timeMatch[3] === "am" && hour === 12) hour = 0;
     start = hour * 60 + minute;
   }
-  return { day, start, duration: Math.min(Math.max(duration, 30), 240) };
+  const floorMatch = lowered.match(/(?:floor|level)\s*(\d)|(?:the\s+)?(\d)(?:st|nd|rd|th)\s+floor/);
+  const requestedFloor = Number(floorMatch?.[1] ?? floorMatch?.[2]);
+  const floor = requestedFloor >= 1 && requestedFloor <= 7 ? requestedFloor : fallbackFloor;
+  const capacityMatch = lowered.match(/(?:for|team of|group of)\s*(\d+)\s*(?:people|persons|members|students)?/);
+  const requestedCapacity = Number(capacityMatch?.[1]);
+  const capacity = requestedCapacity > 0 ? requestedCapacity : fallbackCapacity;
+  return { day, start, duration: Math.min(Math.max(duration, 30), 240), floor, capacity };
 }
 
 function toInputTime(minutes: number) {
@@ -71,6 +77,8 @@ function Index() {
   const [day, setDay] = useState<DayName>(validInitialDay);
   const [start, setStart] = useState(validInitialTime);
   const [duration, setDuration] = useState(120);
+  const [floor, setFloor] = useState<number | "all">("all");
+  const [capacity, setCapacity] = useState(1);
   const [submitted, setSubmitted] = useState(true);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
 
@@ -80,13 +88,19 @@ function Index() {
   }, []);
 
   const end = start + duration;
-  const results = useMemo(() => ROOM_SCHEDULES.filter((room) => isFree(room.schedule[day] ?? [], start, end)), [day, start, end]);
+  const results = useMemo(() => ROOM_SCHEDULES.filter((room) =>
+    isFree(room.schedule[day] ?? [], start, end)
+    && (floor === "all" || room.floor === floor)
+    && room.capacity >= capacity,
+  ), [day, start, end, floor, capacity]);
 
   function runSearch(text = query) {
-    const parsed = parseQuery(text, day, start, duration);
+    const parsed = parseQuery(text, day, start, duration, floor, capacity);
     setDay(parsed.day);
     setStart(parsed.start);
     setDuration(parsed.duration);
+    setFloor(parsed.floor);
+    setCapacity(parsed.capacity);
     setSubmitted(true);
     setSelectedRoom(null);
   }
@@ -141,10 +155,9 @@ function Index() {
           <label className="control-label"><span><Clock3 size={15} /> Duration</span><select value={duration} onChange={(event) => { setDuration(Number(event.target.value)); setSubmitted(true); }} className="control-input"><option value={30}>30 minutes</option><option value={60}>1 hour</option><option value={90}>1.5 hours</option><option value={120}>2 hours</option><option value={180}>3 hours</option><option value={240}>4 hours</option></select></label>
         </div>
 
-        <div className="mb-7 flex flex-wrap items-center gap-3 border-y border-border py-4">
-          <span className="text-xs font-semibold uppercase text-muted-foreground">Coming with room data</span>
-          <button disabled className="inline-flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-xs text-muted-foreground"><MapPin size={14} /> Floor</button>
-          <button disabled className="inline-flex items-center gap-2 rounded-md border border-dashed border-border px-3 py-2 text-xs text-muted-foreground"><Users size={14} /> Capacity</button>
+        <div className="mb-7 grid gap-3 border-y border-border py-4 sm:grid-cols-2">
+          <label className="control-label"><span><MapPin size={15} /> Floor</span><select value={floor} onChange={(event) => { setFloor(event.target.value === "all" ? "all" : Number(event.target.value)); setSubmitted(true); }} className="control-input"><option value="all">All 7 floors</option>{[1, 2, 3, 4, 5, 6, 7].map((item) => <option key={item} value={item}>Floor {item}</option>)}</select></label>
+          <label className="control-label"><span><Users size={15} /> Group size</span><input type="number" min={1} max={60} value={capacity} onChange={(event) => { setCapacity(Math.min(60, Math.max(1, Number(event.target.value) || 1))); setSubmitted(true); }} className="control-input" aria-label="Group size" /></label>
         </div>
 
         {end > CAMPUS_CLOSE ? (
@@ -163,7 +176,7 @@ function Index() {
                   return (
                     <article key={room.room} className="room-card group rounded-lg border border-border bg-card p-5" style={{ animationDelay: `${index * 45}ms` }}>
                       <div className="mb-6 flex items-start justify-between gap-3"><div><p className="text-xs text-muted-foreground">Classroom</p><h3 className="mt-1 font-display text-2xl font-bold">{room.room}</h3></div><span className="rounded-md bg-success/10 px-2.5 py-1 text-xs font-semibold text-success">AVAILABLE</span></div>
-                      <div className="space-y-3 border-t border-border pt-4 text-sm"><div className="flex justify-between gap-4"><span className="text-muted-foreground">Free window</span><span className="font-medium">until {next ? formatMinutes(next.start) : "day end"}</span></div><div className="flex justify-between gap-4"><span className="text-muted-foreground">Timetable</span><span className="text-right font-medium">{room.cohort}</span></div></div>
+                       <div className="space-y-3 border-t border-border pt-4 text-sm"><div className="flex justify-between gap-4"><span className="text-muted-foreground">Floor · Capacity</span><span className="font-medium">{room.floor} · {room.capacity} seats</span></div><div className="flex justify-between gap-4"><span className="text-muted-foreground">Free window</span><span className="font-medium">until {next ? formatMinutes(next.start) : "day end"}</span></div><div className="flex justify-between gap-4"><span className="text-muted-foreground">Timetable</span><span className="text-right font-medium">{room.cohort}</span></div></div>
                       <button onClick={() => setSelectedRoom(selectedRoom === room.room ? null : room.room)} className="mt-5 flex w-full items-center justify-between border-t border-border pt-4 text-sm font-semibold text-primary">Weekly view <ArrowRight size={15} className={`transition-transform ${selectedRoom === room.room ? "rotate-90" : ""}`} /></button>
                       {selectedRoom === room.room && <div className="mt-4 grid grid-cols-5 gap-1" aria-label={`${room.room} weekly availability`}>{DAYS.map((item) => <div key={item} className="text-center"><span className="block text-[10px] text-muted-foreground">{item.slice(0, 2)}</span><span className={`mt-1 block h-8 rounded-sm ${isFree(room.schedule[item] ?? [], start, end) ? "bg-success/20" : "bg-muted"}`} /></div>)}</div>}
                       {room.sourceYear === "2024–25" && <p className="mt-4 text-xs text-warning">Older 2024–25 source included</p>}
