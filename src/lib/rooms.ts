@@ -101,12 +101,8 @@ export const ROOM_SCHEDULES: RoomSchedule[] = [
 export function formatMinutes(value: number) {
   const hour = Math.floor(value / 60);
   const minute = value % 60;
-  return new Intl.DateTimeFormat("en-IN", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-    timeZone: "Asia/Kolkata",
-  }).format(new Date(2026, 0, 1, hour, minute));
+  const displayHour = hour % 12 || 12;
+  return `${displayHour}:${String(minute).padStart(2, "0")} ${hour >= 12 ? "PM" : "AM"}`;
 }
 
 export function getNextBusy(windows: BusyWindow[], from: number) {

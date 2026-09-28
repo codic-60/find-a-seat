@@ -41,8 +41,10 @@ function parseQuery(query: string, fallbackDay: DayName, fallbackStart: number, 
   const lowered = query.toLowerCase();
   const day = DAYS.find((item) => lowered.includes(item.toLowerCase())) ?? fallbackDay;
   const durationMatch = lowered.match(/(\d+(?:\.\d+)?)\s*(hour|hr|hours|hrs|minute|min|minutes|mins)/);
-  const duration = durationMatch
-    ? Math.round(Number(durationMatch[1]) * (durationMatch[2].startsWith("h") ? 60 : 1))
+  const durationValue = durationMatch?.[1];
+  const durationUnit = durationMatch?.[2];
+  const duration = durationValue && durationUnit
+    ? Math.round(Number(durationValue) * (durationUnit.startsWith("h") ? 60 : 1))
     : fallbackDuration;
   const timeMatch = lowered.match(/(?:at|from)\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
   let start = fallbackStart;
@@ -135,7 +137,7 @@ function Index() {
       <section className="mx-auto max-w-6xl px-5 py-8 lg:px-8 lg:py-10">
         <div className="mb-7 grid gap-3 sm:grid-cols-3">
           <label className="control-label"><span><CalendarDays size={15} /> Day</span><select value={day} onChange={(event) => { setDay(event.target.value as DayName); setSubmitted(true); }} className="control-input">{DAYS.map((item) => <option key={item}>{item}</option>)}</select></label>
-          <label className="control-label"><span><Clock3 size={15} /> Start time</span><input type="time" min="09:00" max="17:05" step="300" value={toInputTime(start)} onChange={(event) => { const [hours, minutes] = event.target.value.split(":").map(Number); setStart(hours * 60 + minutes); setSubmitted(true); }} className="control-input" /></label>
+          <label className="control-label"><span><Clock3 size={15} /> Start time</span><input type="time" min="09:00" max="17:05" step="300" value={toInputTime(start)} onChange={(event) => { const parts = event.target.value.split(":").map(Number); const hours = parts[0]; const minutes = parts[1]; if (hours === undefined || minutes === undefined) return; setStart(hours * 60 + minutes); setSubmitted(true); }} className="control-input" /></label>
           <label className="control-label"><span><Clock3 size={15} /> Duration</span><select value={duration} onChange={(event) => { setDuration(Number(event.target.value)); setSubmitted(true); }} className="control-input"><option value={30}>30 minutes</option><option value={60}>1 hour</option><option value={90}>1.5 hours</option><option value={120}>2 hours</option><option value={180}>3 hours</option><option value={240}>4 hours</option></select></label>
         </div>
 
